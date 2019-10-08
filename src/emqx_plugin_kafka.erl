@@ -205,16 +205,16 @@ timestamp() ->
     M * 1000000 + S.
 
 gen_msg_id(connected)->
-	list_to_binary("rbc"++string:substr(md5:md5(integer_to_list(timestamp()+random:uniform(1000000))), 8, 20));
+	list_to_binary("rbc"++string:substr(md5:md5(integer_to_list(timestamp()+rand:uniform(1000000))), 8, 20));
 
 gen_msg_id(disconnected)->
-	list_to_binary("rbd"++string:substr(md5:md5(integer_to_list(timestamp()+random:uniform(1000000))), 8, 20));
+	list_to_binary("rbd"++string:substr(md5:md5(integer_to_list(timestamp()+rand:uniform(1000000))), 8, 20));
 
 gen_msg_id(custom)->
-	list_to_binary("rbt"++string:substr(md5:md5(integer_to_list(timestamp()+random:uniform(1000000))), 8, 20));
+	list_to_binary("rbt"++string:substr(md5:md5(integer_to_list(timestamp()+rand:uniform(1000000))), 8, 20));
 
 gen_msg_id(event)->
-	list_to_binary("rbe"++string:substr(md5:md5(integer_to_list(timestamp()+random:uniform(1000000))), 8, 20)).
+	list_to_binary("rbe"++string:substr(md5:md5(integer_to_list(timestamp()+rand:uniform(1000000))), 8, 20)).
 
 get_app_id(Username)->
 	if is_binary(Username) ->
