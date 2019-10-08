@@ -91,6 +91,7 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
 
 on_message_publish(Message, _Env) ->
     io:format("Publish ~s~n", [emqx_message:format(Message)]),
+    produce_message_kafka_payload(Message),
     {ok, Message}.
 
 get_temp_topic(S)->
