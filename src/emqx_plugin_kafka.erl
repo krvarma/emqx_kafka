@@ -69,7 +69,6 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
 
 on_message_publish(Message, _Env) ->
     io:format("Publish ~s~n", [emqx_message:format(Message)]),
-%%    produce_message_kafka_payload(Message),
 	{ok, Payload} = format_payload(Message),
     produce_kafka_payload(Payload),
     {ok, Message}.
@@ -100,7 +99,7 @@ a2b(A) -> erlang:atom_to_binary(A, utf8).
 produce_kafka_payload(Message) ->
     [{_, Topic}] = ets:lookup(topic_table, kafka_payload_topic),
     % Topic = <<"Processing">>,
-	% io:format("send to kafka event topic: byte size: ~p~n", [byte_size(list_to_binary(Topic))]),    
+	io:format("send to kafka event topic: byte size: ~p~n", [byte_size(list_to_binary(Topic))]),    
     % Payload = iolist_to_binary(mochijson2:encode(Message)),
     Payload = jsx:encode(Message),
     % ok = ekaf:produce_async(Topic, Payload),
