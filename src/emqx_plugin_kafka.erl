@@ -37,48 +37,25 @@ load(Env) ->
     emqx:hook('message.publish', fun ?MODULE:on_message_publish/2, [Env]).
 
 ekaf_init(_Env) ->
-    {ok, BrokerValues} = application:get_env(emqx_plugin_kafka, broker),
-	EventHost = proplists:get_value(event_host, BrokerValues),
-	EventPort = proplists:get_value(event_port, BrokerValues),
-	EventPartitionTotal = proplists:get_value(event_partition_total, BrokerValues),
-	EventTopic = proplists:get_value(event_topic, BrokerValues),
-	
-	CustomHost = proplists:get_value(custom_host, BrokerValues),
-	CustomPort = proplists:get_value(custom_port, BrokerValues),
-	CustomPartitionTotal = proplists:get_value(custom_partition_total, BrokerValues),
-	CustomTopic = proplists:get_value(custom_topic, BrokerValues),
-	
-	OnlineHost = proplists:get_value(online_host, BrokerValues),
-	OnlinePort = proplists:get_value(online_port, BrokerValues),
-	OnlinePartitionTotal = proplists:get_value(online_partition_total, BrokerValues),
-	OnlineTopic = proplists:get_value(online_topic, BrokerValues),
-	
-	ets:new(kafka_config, [named_table, protected, set, {keypos, 1}, {read_concurrency,true}]),
-	
-	ets:insert(kafka_config, {event_host, EventHost}),
-	ets:insert(kafka_config, {event_port, EventPort}),
-	ets:insert(kafka_config, {event_partition_total, EventPartitionTotal}),
-	ets:insert(kafka_config, {event_topic, EventTopic}),
-	
-	ets:insert(kafka_config, {custom_host, CustomHost}),
-    ets:insert(kafka_config, {custom_port, CustomPort}),
-	ets:insert(kafka_config, {custom_partition_total, CustomPartitionTotal}),
-	ets:insert(kafka_config, {custom_topic, CustomTopic}),
-	
-	ets:insert(kafka_config, {online_host, OnlineHost}),
-    ets:insert(kafka_config, {online_port, OnlinePort}),
-	ets:insert(kafka_config, {online_partition_total, OnlinePartitionTotal}),
-	ets:insert(kafka_config, {online_topic, OnlineTopic}),
-	
+    {ok, BrokerValues} = application:get_env(emq_kafka_bridge, broker),
+    KafkaHost = proplists:get_value(host, BrokerValues),
+    KafkaPort = proplists:get_value(port, BrokerValues),
+    KafkaPartitionStrategy= proplists:get_value(partitionstrategy, BrokerValues),
+    KafkaPartitionWorkers= proplists:get_value(partitionworkers, BrokerValues),
+    KafkaPayloadTopic = proplists:get_value(payloadtopic, BrokerValues),
+    KafkaEventTopic = proplists:get_value(eventtopic, BrokerValues),
+    application:set_env(ekaf, ekaf_bootstrap_broker,  {KafkaHost, list_to_integer(KafkaPort)}),
+    % application:set_env(ekaf, ekaf_bootstrap_topics,  [<<"Processing">>, <<"DeviceLog">>]),
+    application:set_env(ekaf, ekaf_partition_strategy, KafkaPartitionStrategy),
+    application:set_env(ekaf, ekaf_per_partition_workers, KafkaPartitionWorkers),
+    application:set_env(ekaf, ekaf_per_partition_workers_max, 10),
+    % application:set_env(ekaf, ekaf_buffer_ttl, 10),
+    % application:set_env(ekaf, ekaf_max_downtime_buffer_size, 5),
+    ets:new(topic_table, [named_table, protected, set, {keypos, 1}]),
+    ets:insert(topic_table, {kafka_payload_topic, KafkaPayloadTopic}),
+    ets:insert(topic_table, {kafka_event_topic, KafkaEventTopic}),
     {ok, _} = application:ensure_all_started(gproc),
-    {ok, _} = application:ensure_all_started(brod),
-	ClientConfig = [{reconnect_cool_down_seconds, 10},{query_api_versions,false}],
-	ok = brod:start_client([{EventHost,EventPort}], event_client,ClientConfig),
-	ok = brod:start_client([{OnlineHost,OnlinePort}], online_client,ClientConfig),
-	ok = brod:start_client([{CustomHost,CustomPort}], custom_client,ClientConfig),
-	ok = brod:start_producer(event_client, list_to_binary(EventTopic), _ProducerConfig = []),
-	ok = brod:start_producer(online_client, list_to_binary(OnlineTopic), _ProducerConfig = []),
-	ok = brod:start_producer(custom_client, list_to_binary(CustomTopic), _ProducerConfig = []).
+    {ok, _} = application:ensure_all_started(ekaf).
 
 on_client_connected(#{clientid := ClientId}, ConnAck, ConnAttrs, _Env) ->
     io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]).
@@ -92,8 +69,53 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
 
 on_message_publish(Message, _Env) ->
     io:format("Publish ~s~n", [emqx_message:format(Message)]),
-    produce_message_kafka_payload(Message),
+%%    produce_message_kafka_payload(Message),
+	{ok, Payload} = format_payload(Message),
+    produce_kafka_payload(Payload),
     {ok, Message}.
+
+timestamp() ->
+    {M, S, _} = os:timestamp(),
+    M * 1000000 + S.
+
+format_payload(Message) ->
+    {ClientId, Username} = format_from(Message#mqtt_message.from),
+    Payload = [{action, <<"message_publish">>},
+                  {clientid, ClientId},
+                  {username, Username},
+                  {topic, Message#mqtt_message.topic},
+                  {payload, Message#mqtt_message.payload},
+                  {ts, timestamp() * 1000}],
+    {ok, Payload}.
+
+format_from({ClientId, Username}) ->
+    {ClientId, Username};
+format_from(From) when is_atom(From) ->
+    {a2b(From), a2b(From)};
+format_from(_) ->
+    {<<>>, <<>>}.
+
+a2b(A) -> erlang:atom_to_binary(A, utf8).
+
+produce_kafka_payload(Message) ->
+    [{_, Topic}] = ets:lookup(topic_table, kafka_payload_topic),
+    % Topic = <<"Processing">>,
+	% io:format("send to kafka event topic: byte size: ~p~n", [byte_size(list_to_binary(Topic))]),    
+    % Payload = iolist_to_binary(mochijson2:encode(Message)),
+    Payload = jsx:encode(Message),
+    % ok = ekaf:produce_async(Topic, Payload),
+    ok = ekaf:produce_async(list_to_binary(Topic), Payload),
+    ok.
+
+produce_kafka_log(Message) ->
+    [{_, Topic}] = ets:lookup(topic_table, kafka_event_topic),
+    % Topic = <<"DeviceLog">>,
+    % io:format("send to kafka event topic: byte size: ~p~n", [byte_size(list_to_binary(Topic))]),    
+    % Payload = iolist_to_binary(mochijson2:encode(Message)),
+    Payload = jsx:encode(Message),
+    % ok = ekaf:produce_async(Topic, Payload),
+    ok = ekaf:produce_async(list_to_binary(Topic), Payload),
+    ok.
 
 get_temp_topic(S)->
 	case lists:last(S) of
