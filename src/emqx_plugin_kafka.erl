@@ -24,16 +24,12 @@
         ]).
 
 %% Hooks functions
--export([ on_client_connected/4,
-          on_client_disconnected/3, 
-          on_message_publish/2
+-export([ on_message_publish/2
         ]).
 
 %% Called when the plugin application start
 load(Env) ->
     ekaf_init([Env]),
-    emqx:hook('client.connected', fun ?MODULE:on_client_connected/4, [Env]),
-    emqx:hook('client.disconnected', fun ?MODULE:on_client_disconnected/3, [Env]),
     emqx:hook('message.publish', fun ?MODULE:on_message_publish/2, [Env]).
 
 ekaf_init(_Env) ->
@@ -55,13 +51,7 @@ ekaf_init(_Env) ->
 	ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}, {required_acks, none}],
 	ok = brod:start_client([{EventHost,EventPort}], event_client,ClientConfig),
 	ok = brod:start_producer(event_client, list_to_binary(EventTopic), _ProducerConfig = [{required_acks, none}]).
-
-on_client_connected(#{clientid := ClientId}, ConnAck, ConnAttrs, _Env) ->
-    io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]).
-
-on_client_disconnected(#{clientid := ClientId}, ReasonCode, _Env) ->
-    io:format("Client(~s) disconnected, reason_code: ~w~n", [ClientId, ReasonCode]).
-
+	
 %% Transform message and return
 on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
     {ok, Message};
