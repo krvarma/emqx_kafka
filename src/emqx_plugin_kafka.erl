@@ -233,7 +233,7 @@ produce_message_kafka_payload(Message) ->
 							?LOG(error,"msg payload: ~s topic:~s", [KafkaMessage, KafkaTopic]),
 							case brod:produce(Client, KafkaTopic, Partition, <<>>, KafkaMessage) of
 								{ok, Pid} ->
-									?LOG(error,"BROD Returns"),
+									?LOG(error,"BROD Returns");
 								{error, Msg} -> 
 									?LOG(error, "brod:produce error: ~s",[Msg])
 							end;
