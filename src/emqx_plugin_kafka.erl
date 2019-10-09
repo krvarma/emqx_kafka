@@ -110,7 +110,6 @@ produce_message_kafka_payload(Message) ->
 							{recvedAt , timestamp() * 1000},
 							{from , <<"mqtt">>},
 							{mqttTopic , Topic},
-							{action , Action},
 							{data , Data}
 						],
 					case get_kafka_config(Event, Message#message.from) of
