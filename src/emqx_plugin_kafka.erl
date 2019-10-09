@@ -37,7 +37,7 @@ load(Env) ->
     emqx:hook('message.publish', fun ?MODULE:on_message_publish/2, [Env]).
 
 ekaf_init(_Env) ->
-    {ok, BrokerValues} = application:get_env(emq_kafka_bridge, broker),
+    {ok, BrokerValues} = application:get_env(emqx_plugin_kafka, broker),
     KafkaHost = proplists:get_value(host, BrokerValues),
     KafkaPort = proplists:get_value(port, BrokerValues),
     KafkaPartitionStrategy= proplists:get_value(partitionstrategy, BrokerValues),
