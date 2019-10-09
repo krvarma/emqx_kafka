@@ -65,45 +65,6 @@ timestamp() ->
     {M, S, _} = os:timestamp(),
     M * 1000000 + S.
 
-format_payload(Message) ->
-    {ClientId, Username} = format_from(Message#message.from),
-    Payload = [{action, <<"message_publish">>},
-                  {clientid, ClientId},
-                  {username, Username},
-                  {topic, Message#message.topic},
-                  {payload, Message#message.payload},
-                  {ts, timestamp() * 1000}],
-    {ok, Payload}.
-
-format_from({ClientId, Username}) ->
-    {ClientId, Username};
-format_from(From) when is_atom(From) ->
-    {a2b(From), a2b(From)};
-format_from(_) ->
-    {<<>>, <<>>}.
-
-a2b(A) -> erlang:atom_to_binary(A, utf8).
-
-produce_kafka_payload(Message) ->
-    % [{_, Topic}] = ets:lookup(topic_table, kafka_payload_topic),
-    Topic = <<"sample_topic">>,
-	io:format("send to kafka event topic: byte size: ~p~n", [byte_size(list_to_binary(Topic))]),    
-    % Payload = iolist_to_binary(mochijson2:encode(Message)),
-    Payload = jsx:encode(Message),
-    ok = ekaf:produce_async(Topic, Payload),
-    % ok = ekaf:produce_async(list_to_binary(Topic), Payload),
-    ok.
-
-get_temp_topic(S)->
-	case lists:last(S) of
-		<<"event">> ->
-			<<"">>;
-		<<"custom">> ->
-			<<"">>;
-		Other ->
-			Other
-	end.
-
 process_message_topic(Topic)->
 	{ok, event, Topic}.
 	
