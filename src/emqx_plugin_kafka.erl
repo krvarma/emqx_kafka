@@ -108,15 +108,12 @@ produce_message_kafka_payload(Message) ->
 		{ok, Event, TempTopic} ->
 			case process_message_payload(Message#message.payload, TempTopic) of
 				{ok, PaloadTopic, Action, Data} ->
-					{M, S, _} = Message#message.timestamp,
 					KafkaPayload = [
 							{clientId , Message#message.from},
 							{recvedAt , timestamp() * 1000},
 							{from , <<"mqtt">>},
 							{mqttTopic , Topic},
-							{topic , PaloadTopic},
 							{action , Action},
-							{timestamp , (M * 1000000 + S) * 1000},
 							{data , Data}
 						],
 					case get_kafka_config(Event, Message#message.from) of
