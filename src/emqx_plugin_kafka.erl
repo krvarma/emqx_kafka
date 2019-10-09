@@ -105,23 +105,7 @@ get_temp_topic(S)->
 	end.
 
 process_message_topic(Topic)->
-	S = binary:split(Topic, <<$/>>, [global, trim]),
-	Size = array:size(array:from_list(S)),
-	if 
-		Size>=5 ->
-			case lists:nth(5, S) of
-				<<"event">> ->
-					{ok, event, get_temp_topic(S)};
-				<<"custom">> ->
-					{ok, custom, get_temp_topic(S)};
-				Other ->
-					?LOG(debug, "unknow topic:~s event:~p", [Topic, Other]),
-					{error,"unknow topic:" ++Topic}
-			end;
-		true->
-			?LOG(debug,"topic size error:~s", [integer_to_list(Size)]),
-			{error, "topic size error:"++integer_to_list(Size)}
-	end.
+	{ok, event, Topic}
 	
 
 get_proplist_value(Key, Proplist, DefaultValue)->
@@ -167,11 +151,8 @@ produce_message_kafka_payload(Message) ->
 					{M, S, _} = Message#message.timestamp,
 					KafkaPayload = [
 							{clientId , Message#message.from},
-							{appId , get_app_id(Username)},
 							{recvedAt , timestamp() * 1000},
 							{from , <<"mqtt">>},
-							{type , <<"string">>},
-							{msgId , gen_msg_id(Event)},
 							{mqttTopic , Topic},
 							{topic , PaloadTopic},
 							{action , Action},
@@ -199,54 +180,6 @@ produce_message_kafka_payload(Message) ->
 			?LOG(error,"process topic error: ~s",[Msg])
 	end,
     ok.
-
-gen_msg_id(connected)->
-	list_to_binary("rbc"++string:substr(md5:md5(integer_to_list(timestamp()+rand:uniform(1000000))), 8, 20));
-
-gen_msg_id(disconnected)->
-	list_to_binary("rbd"++string:substr(md5:md5(integer_to_list(timestamp()+rand:uniform(1000000))), 8, 20));
-
-gen_msg_id(custom)->
-	list_to_binary("rbt"++string:substr(md5:md5(integer_to_list(timestamp()+rand:uniform(1000000))), 8, 20));
-
-gen_msg_id(event)->
-	list_to_binary("rbe"++string:substr(md5:md5(integer_to_list(timestamp()+rand:uniform(1000000))), 8, 20)).
-
-get_app_id(Username)->
-	if is_binary(Username) ->
-		    UsernameStr = binary:bin_to_list(Username);
-	   is_list(Username) ->
-			UsernameStr = Username;
-	   true -> 
-		    UsernameStr = ""
-	end,
-	Position = string:chr(UsernameStr, $@),
-	case Position of
-		0->	
-			<<"">>;
-		_->
-			list_to_binary(lists:nth(2,string:tokens(UsernameStr,"@")))
-	end.
-
-get_mqtt_topic(Clientid, connected)->
-	NodeStr = string:concat("$SYS/brokers/", atom_to_list(node())),
-	Result =  string:concat(string:concat(string:concat(NodeStr, "/clients/"), binary_to_list(Clientid)), "/connected"),
-	list_to_binary(Result);
-
-get_mqtt_topic(Clientid, disconnected)->
-	NodeStr = string:concat("$SYS/brokers/", atom_to_list(node())),
-	Result =  string:concat(string:concat(string:concat(NodeStr, "/clients/"), binary_to_list(Clientid)), "/disconnected"),
-	list_to_binary(Result).
-
-get_ip_str({{I1, I2, I3, I4},_})->
-	IP = list_to_binary(integer_to_list(I1)++"."++integer_to_list(I2)++"."++integer_to_list(I3)++"."++integer_to_list(I4)),
-	IP.
-
-is_online(connected)->
-	true;
-
-is_online(disconnected)->
-	false.
 	
 %% Called when the plugin application stop
 unload() ->
