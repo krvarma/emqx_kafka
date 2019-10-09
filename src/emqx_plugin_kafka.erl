@@ -51,7 +51,7 @@ ekaf_init(_Env) ->
 	ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}, {required_acks, none}],
 	ok = brod:start_client([{EventHost,EventPort}], event_client,ClientConfig),
 	ok = brod:start_producer(event_client, list_to_binary(EventTopic), _ProducerConfig = [{required_acks, none}]).
-	
+
 %% Transform message and return
 on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
     {ok, Message};
@@ -182,7 +182,7 @@ produce_message_kafka_payload(Message) ->
 						{ok, KafkaTopic, Partition, Client} ->
 							KafkaMessage = jsx:encode(KafkaPayload),
 							?LOG(error,"msg payload: ~s topic:~s", [KafkaMessage, KafkaTopic]),
-							case brod:produce_sync(Client, KafkaTopic, Partition, <<>>, KafkaMessage) of
+							case brod:produce(Client, KafkaTopic, Partition, <<>>, KafkaMessage) of
 								{ok, Pid} ->
 									?LOG(error,"BROD Returns");
 								{error, Msg} -> 
