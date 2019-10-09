@@ -42,17 +42,7 @@ ekaf_init(_Env) ->
 	EventPort = proplists:get_value(event_port, BrokerValues),
 	EventPartitionTotal = proplists:get_value(event_partition_total, BrokerValues),
 	EventTopic = proplists:get_value(event_topic, BrokerValues),
-	
-	CustomHost = proplists:get_value(custom_host, BrokerValues),
-	CustomPort = proplists:get_value(custom_port, BrokerValues),
-	CustomPartitionTotal = proplists:get_value(custom_partition_total, BrokerValues),
-	CustomTopic = proplists:get_value(custom_topic, BrokerValues),
-	
-	OnlineHost = proplists:get_value(online_host, BrokerValues),
-	OnlinePort = proplists:get_value(online_port, BrokerValues),
-	OnlinePartitionTotal = proplists:get_value(online_partition_total, BrokerValues),
-	OnlineTopic = proplists:get_value(online_topic, BrokerValues),
-	
+		
 	ets:new(kafka_config, [named_table, protected, set, {keypos, 1}, {read_concurrency,true}]),
 	
 	ets:insert(kafka_config, {event_host, EventHost}),
@@ -60,25 +50,11 @@ ekaf_init(_Env) ->
 	ets:insert(kafka_config, {event_partition_total, EventPartitionTotal}),
 	ets:insert(kafka_config, {event_topic, EventTopic}),
 	
-	ets:insert(kafka_config, {custom_host, CustomHost}),
-    ets:insert(kafka_config, {custom_port, CustomPort}),
-	ets:insert(kafka_config, {custom_partition_total, CustomPartitionTotal}),
-	ets:insert(kafka_config, {custom_topic, CustomTopic}),
-	
-	ets:insert(kafka_config, {online_host, OnlineHost}),
-    ets:insert(kafka_config, {online_port, OnlinePort}),
-	ets:insert(kafka_config, {online_partition_total, OnlinePartitionTotal}),
-	ets:insert(kafka_config, {online_topic, OnlineTopic}),
-	
     {ok, _} = application:ensure_all_started(gproc),
     {ok, _} = application:ensure_all_started(brod),
 	ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}, {required_acks, false}],
 	ok = brod:start_client([{EventHost,EventPort}], event_client,ClientConfig),
-	ok = brod:start_client([{OnlineHost,OnlinePort}], online_client,ClientConfig),
-	ok = brod:start_client([{CustomHost,CustomPort}], custom_client,ClientConfig),
-	ok = brod:start_producer(event_client, list_to_binary(EventTopic), _ProducerConfig = []),
-	ok = brod:start_producer(online_client, list_to_binary(OnlineTopic), _ProducerConfig = []),
-	ok = brod:start_producer(custom_client, list_to_binary(CustomTopic), _ProducerConfig = []).
+	ok = brod:start_producer(event_client, list_to_binary(EventTopic), _ProducerConfig = [{required_acks, false}]),
 
 on_client_connected(#{clientid := ClientId}, ConnAck, ConnAttrs, _Env) ->
     io:format("Client(~s) connected, connack: ~w, conn_attrs:~p~n", [ClientId, ConnAck, ConnAttrs]).
@@ -126,16 +102,6 @@ produce_kafka_payload(Message) ->
     Payload = jsx:encode(Message),
     ok = ekaf:produce_async(Topic, Payload),
     % ok = ekaf:produce_async(list_to_binary(Topic), Payload),
-    ok.
-
-produce_kafka_log(Message) ->
-    [{_, Topic}] = ets:lookup(topic_table, kafka_event_topic),
-    % Topic = <<"DeviceLog">>,
-    % io:format("send to kafka event topic: byte size: ~p~n", [byte_size(list_to_binary(Topic))]),    
-    % Payload = iolist_to_binary(mochijson2:encode(Message)),
-    Payload = jsx:encode(Message),
-    % ok = ekaf:produce_async(Topic, Payload),
-    ok = ekaf:produce_async(list_to_binary(Topic), Payload),
     ok.
 
 get_temp_topic(S)->
@@ -195,11 +161,6 @@ get_kafka_config(Event, Clientid) ->
 			[{_, PartitionTotal}] = ets:lookup(kafka_config, event_partition_total),
 			Partition = erlang:phash2(Clientid) rem PartitionTotal,
 			{ok, list_to_binary(Topic), Partition, event_client};
-		custom ->
-			[{_, Topic}] = ets:lookup(kafka_config, custom_topic),
-			[{_, PartitionTotal}] = ets:lookup(kafka_config, custom_partition_total),
-			Partition = erlang:phash2(Clientid) rem PartitionTotal,
-			{ok, list_to_binary(Topic), Partition, custom_client};
 		Other ->
 			?LOG(debug, "unknow envent type:~s",[Other]),
 			{error,"unknow envent type:"++Other}
@@ -296,32 +257,6 @@ is_online(connected)->
 is_online(disconnected)->
 	false.
 	
-
-produce_online_kafka_log(Clientid, Username, Peername, Connection) ->
-	Now = timestamp() * 1000,
-	MqttTopic = get_mqtt_topic(Clientid, Connection),
-	KafkaPayload = [
-					{clientId , Clientid},
-					{appId , get_app_id(Username)},
-					{recvedAt , Now},
-					{msgId , gen_msg_id(Connection)},
-					{mqttTopic , MqttTopic},
-					{deviceSource, <<"roobo">>},
-					{from, <<"mqtt">>},
-					{action , <<"device.status.online">>},
-					{ipaddress , get_ip_str(Peername)},
-					{timestamp , Now},
-					{isOnline , is_online(Connection)},
-					{username , Username}
-				],
-	[{_,Topic}] = ets:lookup(kafka_config, online_topic),
-	[{_, PartitionTotal}] = ets:lookup(kafka_config, online_partition_total),
-	Partition = erlang:phash2(Clientid) rem PartitionTotal,
-	KafkaMessage = jsx:encode(KafkaPayload),
-	?LOG(debug, "~p payload: ~s topic:~s", [Connection, KafkaMessage, Topic]),
-	{ok, Pid} = brod:produce(online_client, list_to_binary(Topic), Partition, <<>>, KafkaMessage),
-    ok.
-
 %% Called when the plugin application stop
 unload() ->
     emqx:unhook('client.connected', fun ?MODULE:on_client_connected/4),
