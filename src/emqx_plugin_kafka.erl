@@ -106,7 +106,6 @@ produce_message_kafka_payload(Message) ->
 	Topic = Message#message.topic, 
 	case process_message_topic(Topic) of 
 		{ok, Event, TempTopic} ->
-			#{username:=Username} = Message#message.headers,
 			case process_message_payload(Message#message.payload, TempTopic) of
 				{ok, PaloadTopic, Action, Data} ->
 					{M, S, _} = Message#message.timestamp,
