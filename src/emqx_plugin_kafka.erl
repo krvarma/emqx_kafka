@@ -238,6 +238,7 @@ produce_message_kafka_payload(Message) ->
 									?LOG(error,"BROD Returns"),
 								{error, Msg} -> 
 									?LOG(error, "brod:produce error: ~s",[Msg])
+							end;
 						{error, Msg} -> 
 							?LOG(error, "get_kafka_config error: ~s",[Msg])
 					end;
