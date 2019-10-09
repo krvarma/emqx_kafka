@@ -32,8 +32,8 @@
 %% Called when the plugin application start
 load(Env) ->
     ekaf_init([Env]),
-    emqx:hook('client.connected', fun ?MODULE:on_client_connected/4, [Env]),
-    emqx:hook('client.disconnected', fun ?MODULE:on_client_disconnected/3, [Env]),
+%%    emqx:hook('client.connected', fun ?MODULE:on_client_connected/4, [Env]),
+%%    emqx:hook('client.disconnected', fun ?MODULE:on_client_disconnected/3, [Env]),
     emqx:hook('message.publish', fun ?MODULE:on_message_publish/2, [Env]).
 
 ekaf_init(_Env) ->
@@ -72,6 +72,7 @@ ekaf_init(_Env) ->
 	
     {ok, _} = application:ensure_all_started(gproc),
     {ok, _} = application:ensure_all_started(brod),
+	{ok, _} = application:ensure_all_started(jsx)
 	ClientConfig = [{reconnect_cool_down_seconds, 10},{query_api_versions,false}],
 	ok = brod:start_client([{EventHost,EventPort}], event_client,ClientConfig),
 	ok = brod:start_client([{OnlineHost,OnlinePort}], online_client,ClientConfig),
