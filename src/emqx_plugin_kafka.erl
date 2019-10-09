@@ -32,8 +32,8 @@
 %% Called when the plugin application start
 load(Env) ->
     ekaf_init([Env]),
-%%    emqx:hook('client.connected', fun ?MODULE:on_client_connected/4, [Env]),
-%%    emqx:hook('client.disconnected', fun ?MODULE:on_client_disconnected/3, [Env]),
+    emqx:hook('client.connected', fun ?MODULE:on_client_connected/4, [Env]),
+    emqx:hook('client.disconnected', fun ?MODULE:on_client_disconnected/3, [Env]),
     emqx:hook('message.publish', fun ?MODULE:on_message_publish/2, [Env]).
 
 ekaf_init(_Env) ->
