@@ -81,10 +81,7 @@ process_message_payload(Payload, TempTopic)->
 	case jsx:is_json(Payload) of
 		true ->
 			BodyResult = jsx:decode(Payload),
-			Topic = get_proplist_value(<<"topic">>, BodyResult, <<"">>),
-			Action = get_proplist_value(<<"action">>, BodyResult, TempTopic),
-			DataResult = proplists:delete(<<"action">>, proplists:delete(<<"topic">>, proplists:delete(<<"timestamp">>, BodyResult))),
-			{ok, Topic, Action, DataResult};
+			{ok, BodyResult};
 		false ->
 			{error,"Payload is not a json:"++Payload}
 	end.
@@ -107,7 +104,7 @@ produce_message_kafka_payload(Message) ->
 	case process_message_topic(Topic) of 
 		{ok, Event, TempTopic} ->
 			case process_message_payload(Message#message.payload, TempTopic) of
-				{ok, PaloadTopic, Action, Data} ->
+				{ok, Data} ->
 					KafkaPayload = [
 							{clientId , Message#message.from},
 							{recvedAt , timestamp() * 1000},
