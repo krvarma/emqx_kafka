@@ -97,13 +97,13 @@ format_from(_) ->
 a2b(A) -> erlang:atom_to_binary(A, utf8).
 
 produce_kafka_payload(Message) ->
-    [{_, Topic}] = ets:lookup(topic_table, kafka_payload_topic),
-    % Topic = <<"Processing">>,
+    % [{_, Topic}] = ets:lookup(topic_table, kafka_payload_topic),
+    Topic = KafkaPayloadTopic,
 	io:format("send to kafka event topic: byte size: ~p~n", [byte_size(list_to_binary(Topic))]),    
     % Payload = iolist_to_binary(mochijson2:encode(Message)),
     Payload = jsx:encode(Message),
-    % ok = ekaf:produce_async(Topic, Payload),
-    ok = ekaf:produce_async(list_to_binary(Topic), Payload),
+    ok = ekaf:produce_async(Topic, Payload),
+    % ok = ekaf:produce_async(list_to_binary(Topic), Payload),
     ok.
 
 produce_kafka_log(Message) ->
