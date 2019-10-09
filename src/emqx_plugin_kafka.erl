@@ -105,7 +105,7 @@ get_temp_topic(S)->
 	end.
 
 process_message_topic(Topic)->
-	{ok, event, Topic}
+	{ok, event, Topic}.
 	
 
 get_proplist_value(Key, Proplist, DefaultValue)->
