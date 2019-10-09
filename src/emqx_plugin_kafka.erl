@@ -79,12 +79,12 @@ timestamp() ->
     M * 1000000 + S.
 
 format_payload(Message) ->
-    {ClientId, Username} = format_from(Message#mqtt_message.from),
+    {ClientId, Username} = format_from(Message#message.from),
     Payload = [{action, <<"message_publish">>},
                   {clientid, ClientId},
                   {username, Username},
-                  {topic, Message#mqtt_message.topic},
-                  {payload, Message#mqtt_message.payload},
+                  {topic, Message#message.topic},
+                  {payload, Message#message.payload},
                   {ts, timestamp() * 1000}],
     {ok, Payload}.
 
