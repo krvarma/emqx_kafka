@@ -72,7 +72,7 @@ ekaf_init(_Env) ->
 	
     {ok, _} = application:ensure_all_started(gproc),
     {ok, _} = application:ensure_all_started(brod),
-	ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}],
+	ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}, {required_acks, false}],
 	ok = brod:start_client([{EventHost,EventPort}], event_client,ClientConfig),
 	ok = brod:start_client([{OnlineHost,OnlinePort}], online_client,ClientConfig),
 	ok = brod:start_client([{CustomHost,CustomPort}], custom_client,ClientConfig),
@@ -231,7 +231,7 @@ produce_message_kafka_payload(Message) ->
 						{ok, KafkaTopic, Partition, Client} ->
 							KafkaMessage = jsx:encode(KafkaPayload),
 							?LOG(error,"msg payload: ~s topic:~s", [KafkaMessage, KafkaTopic]),
-							case brod:produce(Client, KafkaTopic, Partition, <<>>, KafkaMessage) of
+							case brod:produce_sync(Client, KafkaTopic, Partition, <<>>, KafkaMessage) of
 								{ok, Pid} ->
 									?LOG(error,"BROD Returns");
 								{error, Msg} -> 
