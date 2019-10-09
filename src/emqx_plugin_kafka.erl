@@ -98,7 +98,7 @@ a2b(A) -> erlang:atom_to_binary(A, utf8).
 
 produce_kafka_payload(Message) ->
     % [{_, Topic}] = ets:lookup(topic_table, kafka_payload_topic),
-    Topic = KafkaPayloadTopic,
+    Topic = <<"sample_topic">>,
 	io:format("send to kafka event topic: byte size: ~p~n", [byte_size(list_to_binary(Topic))]),    
     % Payload = iolist_to_binary(mochijson2:encode(Message)),
     Payload = jsx:encode(Message),
