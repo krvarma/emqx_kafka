@@ -183,8 +183,9 @@ produce_message_kafka_payload(Message) ->
 							KafkaMessage = jsx:encode(KafkaPayload),
 							?LOG(error,"msg payload: ~s topic:~s", [KafkaMessage, KafkaTopic]),
 							case brod:produce(Client, KafkaTopic, Partition, <<>>, KafkaMessage) of
-								{ok, Pid} ->
-									?LOG(error,"BROD Returns");
+								{ok, CallRef} ->
+									?LOG(error,"BROD Returns"),
+									brod:sync_produce_request(CallRef);
 								{error, Msg} -> 
 									?LOG(error, "brod:produce error: ~s",[Msg])
 							end;
