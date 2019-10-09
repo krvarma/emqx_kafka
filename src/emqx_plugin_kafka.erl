@@ -222,10 +222,6 @@ produce_message_kafka_payload(Message) ->
 	end,
     ok.
 
-timestamp() ->
-    {M, S, _} = os:timestamp(),
-    M * 1000000 + S.
-
 gen_msg_id(connected)->
 	list_to_binary("rbc"++string:substr(md5:md5(integer_to_list(timestamp()+rand:uniform(1000000))), 8, 20));
 
