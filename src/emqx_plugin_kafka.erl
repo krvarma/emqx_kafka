@@ -91,7 +91,7 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
     {ok, Message};
 
 on_message_publish(Message, _Env) ->
-    LOG(debug, "on_message_publish msg:~p", [Message]),
+    ?LOG(debug, "on_message_publish msg:~p", [Message]),
 	produce_message_kafka_payload(Message),
     {ok, Message}.
 
