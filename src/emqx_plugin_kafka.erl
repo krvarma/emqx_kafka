@@ -64,8 +64,11 @@ on_message_publish(Message, _Env) ->
 timestamp() ->
     %{M, S, _} = os:timestamp(),
     %M * 1000000 + S.
-	{{Year, Month, Day}, {Hour, Minute, Second}} = calendar:now_to_datetime(erlang:now()),
-	StrTime = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0wT~2..0w:~2..0w:~2..0w",[Year,Month,Day,Hour,Minute,Second])).
+	%{{Year, Month, Day}, {Hour, Minute, Second}} = calendar:now_to_datetime(erlang:now()),
+	%StrTime = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0wT~2..0w:~2..0w:~2..0w",[Year,Month,Day,Hour,Minute,Second])).
+	%iso_fmt:iso_8601_fmt(erlang:localtime()).
+	{{Year, Month, Day}, {Hour, Min, Sec}} = calendar:universal_time(),
+    iolist_to_binary(io_lib:format("~.4.0w-~.2.0w-~.2.0wT~.2.0w:~.2.0w:~.2.0wZ",[Year, Month, Day, Hour, Min, Sec] )).
 
 process_message_topic(Topic)->
 	{ok, event, Topic}.
