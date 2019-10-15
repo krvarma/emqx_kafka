@@ -107,8 +107,7 @@ produce_message_kafka_payload(Message) ->
 				{ok, Data} ->
 					KafkaPayload = [
 							{clientId , Message#message.from},
-							{recvedAt , timestamp() * 1000},
-							{from , <<"mqtt">>},
+							{ts , timestamp() * 1000},
 							{mqttTopic , Topic},
 							{data , Data}
 						],
