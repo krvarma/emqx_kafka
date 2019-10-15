@@ -62,8 +62,10 @@ on_message_publish(Message, _Env) ->
     {ok, Message}.
 
 timestamp() ->
-    {M, S, _} = os:timestamp(),
-    M * 1000000 + S.
+    %{M, S, _} = os:timestamp(),
+    %M * 1000000 + S.
+	{{Year, Month, Day}, {Hour, Minute, Second}} = calendar:now_to_datetime(erlang:now()),
+	StrTime = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0wT~2..0w:~2..0w:~2..0w",[Year,Month,Day,Hour,Minute,Second])).
 
 process_message_topic(Topic)->
 	{ok, event, Topic}.
@@ -107,7 +109,7 @@ produce_message_kafka_payload(Message) ->
 				{ok, Data} ->
 					KafkaPayload = [
 							{clientId , Message#message.from},
-							{ts , timestamp() * 1000},
+							{ts , timestamp() },
 							{mqttTopic , Topic},
 							{data , Data}
 						],
