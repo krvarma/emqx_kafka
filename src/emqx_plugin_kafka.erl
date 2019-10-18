@@ -96,7 +96,7 @@ get_kafka_config(Event, Clientid) ->
 		event ->
 			[{_, Topic}] = ets:lookup(kafka_config, event_topic),
 			[{_, PartitionTotal}] = ets:lookup(kafka_config, event_partition_total),
-			Partition = erlang:phash2(Clientid) rem PartitionTotal,
+			Partition = random:uniform(100000) rem PartitionTotal,
 			{ok, list_to_binary(Topic), Partition, event_client};
 		Other ->
 			?LOG(debug, "unknow envent type:~s",[Other]),
