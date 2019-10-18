@@ -122,7 +122,7 @@ produce_message_kafka_payload(Message) ->
 							?LOG(error,"msg payload: ~s topic:~s", [KafkaMessage, KafkaTopic]),
 							case brod:produce(Client, KafkaTopic, Partition, <<>>, [{timestamp(), Topic, KafkaMessage}]) of
 								{ok, CallRef} ->
-									?LOG(error,"BROD Returns"),
+									?LOG(error,"BROD: Message Send to Particion ~n", Partition),
 									brod:sync_produce_request(CallRef);
 								{error, Msg} -> 
 									?LOG(error, "brod:produce error: ~s",[Msg])
