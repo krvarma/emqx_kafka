@@ -38,6 +38,8 @@ ekaf_init(_Env) ->
 	EventPort = proplists:get_value(event_port, BrokerValues),
 	EventPartitionTotal = proplists:get_value(event_partition_total, BrokerValues),
 	EventTopic = proplists:get_value(event_topic, BrokerValues),
+	EventUsername = proplists:get_value(event_uname, BrokerValues),
+	EventPassword = proplists:get_value(event_pwd, BrokerValues),
 		
 	ets:new(kafka_config, [named_table, protected, set, {keypos, 1}, {read_concurrency,true}]),
 	
@@ -54,7 +56,7 @@ ekaf_init(_Env) ->
   		{query_api_versions, true},
   		{reconnect_cool_down_seconds, 10},
   		{query_api_versions, false},
-  		{sasl, {plain, "API_KEY", "API_SECRET"}}
+  		{sasl, {plain, EventUsername, EventPassword}}
 	]),
 	ok = brod:start_producer(event_client, list_to_binary(EventTopic), _ProducerConfig = [{required_acks, none}]).
 
