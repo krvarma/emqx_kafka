@@ -30,6 +30,7 @@
   1},
  {<<"gen_rpc">>,
   {git,"https://github.com/emqx/gen_rpc",
+       {ref,"b21dbf01e720fc8ef60573c05f6014e540461f03"}},
   1},
  {<<"getopt">>,
   {git,"https://github.com/emqx/getopt.git",
