@@ -50,18 +50,18 @@ ekaf_init(_Env) ->
 	
     {ok, _} = application:ensure_all_started(gproc),
     {ok, _} = application:ensure_all_started(brod),
-	ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}, {required_acks, none}],
+	%%ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}, {required_acks, none}],
 	%% ok = brod:start_client([{EventHost,EventPort}], event_client,ClientConfig),
-	?LOG(error,"Username: ~s PWD:~s", [EventUsername, EventPassword]),
+	%%?LOG(error,"Username: ~s PWD:~s", [EventUsername, EventPassword]),
 	ok = brod:start_client([{EventHost,EventPort}], event_client,[
   		{reconnect_cool_down_seconds, 10},
   		{query_api_versions, false},
 		{required_acks, none},
-  		{sasl, {plain, "admin", "admin-secret"}}
+  		{sasl, {plain, EventUsername, EventPassword}}
 	]),
 	ok = brod:start_producer(event_client, list_to_binary(EventTopic), _ProducerConfig = [
 		{required_acks, none},
-		{sasl, {plain, "admin", "admin-secret"}}
+		{sasl, {plain, EventUsername, EventPassword}}
 	]).
 
 %% Transform message and return
