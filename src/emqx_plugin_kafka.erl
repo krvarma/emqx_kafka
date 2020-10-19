@@ -52,8 +52,7 @@ ekaf_init(_Env) ->
     {ok, _} = application:ensure_all_started(brod),
 	ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}, {required_acks, none}],
 	%% ok = brod:start_client([{EventHost,EventPort}], event_client,ClientConfig),
-	?LOG(debug, "Start :~p", [EventUsername]),
-	?LOG(debug, "Start :~p", [EventPassword]),
+	?LOG(error,"Username: ~s PWD:~s", [EventUsername, EventPassword]),
 	ok = brod:start_client([{EventHost,EventPort}], event_client,[
   		{reconnect_cool_down_seconds, 10},
   		{query_api_versions, false},
