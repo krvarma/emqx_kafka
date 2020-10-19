@@ -56,7 +56,7 @@ ekaf_init(_Env) ->
   		{query_api_versions, true},
   		{reconnect_cool_down_seconds, 10},
   		{query_api_versions, false},
-  		{sasl, {plain, EventUsername, EventPassword}}
+  		{sasl, {plain, "admin", "admin_secret"}}
 	]),
 	ok = brod:start_producer(event_client, list_to_binary(EventTopic), _ProducerConfig = [{required_acks, none}]).
 
