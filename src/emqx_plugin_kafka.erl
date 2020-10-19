@@ -50,7 +50,7 @@ ekaf_init(_Env) ->
 	
     {ok, _} = application:ensure_all_started(gproc),
     {ok, _} = application:ensure_all_started(brod),
-	ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}, {required_acks, none}, {sasl, {plain, "admin", "admin_secret"}}],
+	ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}, {required_acks, none}, {sasl, {plain, "admin", "admin-secret"}}],
 	ok = brod:start_client([{EventHost,EventPort}], event_client,ClientConfig),
 	ok = brod:start_producer(event_client, list_to_binary(EventTopic), _ProducerConfig = [{required_acks, none}]).
 
