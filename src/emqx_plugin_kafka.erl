@@ -48,8 +48,14 @@ ekaf_init(_Env) ->
 	
     {ok, _} = application:ensure_all_started(gproc),
     {ok, _} = application:ensure_all_started(brod),
-	ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}, {required_acks, none}],
-	ok = brod:start_client([{EventHost,EventPort}], event_client,ClientConfig),
+	%%ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}, {required_acks, none}],
+	%% ok = brod:start_client([{EventHost,EventPort}], event_client,ClientConfig),
+	ok = brod:start_client([{EventHost,EventPort}], event_client,[
+  		{query_api_versions, true},
+  		{reconnect_cool_down_seconds, 10},
+  		{query_api_versions, false},
+  		{sasl, {plain, "API_KEY", "API_SECRET"}}
+	]),
 	ok = brod:start_producer(event_client, list_to_binary(EventTopic), _ProducerConfig = [{required_acks, none}]).
 
 %% Transform message and return
@@ -73,15 +79,6 @@ timestamp() ->
 process_message_topic(Topic)->
 	{ok, event, Topic}.
 	
-
-get_proplist_value(Key, Proplist, DefaultValue)->
-	case proplists:get_value(Key, Proplist) of
-		undefined ->
-			DefaultValue;
-		Other ->
-			Other
-	end.
-
 process_message_payload(Payload, TempTopic)->
 	case jsx:is_json(Payload) of
 		true ->

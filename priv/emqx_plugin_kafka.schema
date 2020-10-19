@@ -21,6 +21,16 @@
   {datatype, string}
 ]}.
 
+{mapping, "event.kafka.username", "emqx_plugin_kafka.broker", [
+  {default, ""},
+  {datatype, string}
+]}.
+
+{mapping, "event.kafka.password", "emqx_plugin_kafka.broker", [
+  {default, ""},
+  {datatype, string}
+]}.
+
 {mapping, "custom.kafka.host", "emqx_plugin_kafka.broker", [
   {default, "localhost"},
   {datatype, string}
@@ -67,6 +77,8 @@
   	{event_port, cuttlefish:conf_get("event.kafka.port", Conf)},
   	{event_partition_total, cuttlefish:conf_get("event.kafka.partition_total", Conf)},
   	{event_topic, cuttlefish:conf_get("event.kafka.topic", Conf)},
+    {event_uname, cuttlefish:conf_get("event.kafka.username", Conf)},
+    {event_pwd, cuttlefish:conf_get("event.kafka.password", Conf)},
   	
   	{custom_host, cuttlefish:conf_get("custom.kafka.host", Conf)},
   	{custom_port, cuttlefish:conf_get("custom.kafka.port", Conf)},
