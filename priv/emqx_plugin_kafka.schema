@@ -56,6 +56,6 @@
     {event_pwd, cuttlefish:conf_get("event.kafka.password", Conf)},
     {event_cacertfile, cuttlefish:conf_get("event.kafka.cacertfile", Conf)},
     {event_certfile, cuttlefish:conf_get("event.kafka.certfile", Conf)},
-    {event_keyfile, cuttlefish:conf_get("event.kafka.keyfile", Conf)},
+    {event_keyfile, cuttlefish:conf_get("event.kafka.keyfile", Conf)}
   ]
   end}.
