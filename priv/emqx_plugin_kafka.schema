@@ -31,43 +31,18 @@
   {datatype, string}
 ]}.
 
-{mapping, "custom.kafka.host", "emqx_plugin_kafka.broker", [
-  {default, "localhost"},
+{mapping, "event.kafka.cacertfile", "emqx_plugin_kafka.broker", [
+  {default, ""},
   {datatype, string}
 ]}.
 
-{mapping, "custom.kafka.port", "emqx_plugin_kafka.broker", [
-  {default, 9092},
-  {datatype, integer}
-]}.
-
-{mapping, "custom.kafka.partition_total", "emqx_plugin_kafka.broker", [
-  {default, 1},
-  {datatype, integer}
-]}.
-
-{mapping, "custom.kafka.topic", "emqx_plugin_kafka.broker", [
-  {default, "roobo_device_event"},
+{mapping, "event.kafka.certfile", "emqx_plugin_kafka.broker", [
+  {default, ""},
   {datatype, string}
 ]}.
 
-{mapping, "online.kafka.host", "emqx_plugin_kafka.broker", [
-  {default, "localhost"},
-  {datatype, string}
-]}.
-
-{mapping, "online.kafka.port", "emqx_plugin_kafka.broker", [
-  {default, 9092},
-  {datatype, integer}
-]}.
-
-{mapping, "online.kafka.partition_total", "emqx_plugin_kafka.broker", [
-  {default, 1},
-  {datatype, integer}
-]}.
-
-{mapping, "online.kafka.topic", "emqx_plugin_kafka.broker", [
-  {default, "roobo_device_online"},
+{mapping, "event.kafka.keyfile", "emqx_plugin_kafka.broker", [
+  {default, ""},
   {datatype, string}
 ]}.
 
@@ -79,15 +54,8 @@
   	{event_topic, cuttlefish:conf_get("event.kafka.topic", Conf)},
     {event_uname, cuttlefish:conf_get("event.kafka.username", Conf)},
     {event_pwd, cuttlefish:conf_get("event.kafka.password", Conf)},
-  	
-  	{custom_host, cuttlefish:conf_get("custom.kafka.host", Conf)},
-  	{custom_port, cuttlefish:conf_get("custom.kafka.port", Conf)},
-  	{custom_partition_total, cuttlefish:conf_get("custom.kafka.partition_total", Conf)},
-  	{custom_topic, cuttlefish:conf_get("custom.kafka.topic", Conf)},
-  	
-  	{online_host, cuttlefish:conf_get("online.kafka.host", Conf)},
-  	{online_port, cuttlefish:conf_get("online.kafka.port", Conf)},
-  	{online_partition_total, cuttlefish:conf_get("online.kafka.partition_total", Conf)},
-  	{online_topic, cuttlefish:conf_get("online.kafka.topic", Conf)}
+    {event_cacertfile, cuttlefish:conf_get("event.kafka.cacertfile", Conf)},
+    {event_certfile, cuttlefish:conf_get("event.kafka.certfile", Conf)},
+    {event_keyfile, cuttlefish:conf_get("event.kafka.keyfile", Conf)},
   ]
   end}.

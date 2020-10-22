@@ -40,6 +40,10 @@ ekaf_init(_Env) ->
 	EventTopic = proplists:get_value(event_topic, BrokerValues),
 	EventUsername = proplists:get_value(event_uname, BrokerValues),
 	EventPassword = proplists:get_value(event_pwd, BrokerValues),
+
+	EventCACertFile = proplists:get_value(event_cacertfile, BrokerValues),
+	EventCertFile = proplists:get_value(event_certfile, BrokerValues),
+	EventKeyFile = proplists:get_value(event_keyfile, BrokerValues),
 		
 	ets:new(kafka_config, [named_table, protected, set, {keypos, 1}, {read_concurrency,true}]),
 	
@@ -53,6 +57,7 @@ ekaf_init(_Env) ->
 	%%ClientConfig = [{reconnect_cool_down_seconds, 10}, {query_api_versions,false}, {required_acks, none}],
 	%% ok = brod:start_client([{EventHost,EventPort}], event_client,ClientConfig),
 	%%?LOG(error,"Username: ~s PWD:~s", [EventUsername, EventPassword]),
+	?LOG(error,"CACert: ~s Cert: ~s Key: ~s", [EventCACertFile, EventCertFile, EventKeyFile]),
 	ok = brod:start_client([{EventHost,EventPort}], event_client,[
   		{reconnect_cool_down_seconds, 10},
   		{query_api_versions, false},
