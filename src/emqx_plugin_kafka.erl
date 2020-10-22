@@ -62,10 +62,12 @@ ekaf_init(_Env) ->
   		{reconnect_cool_down_seconds, 10},
   		{query_api_versions, false},
 		{required_acks, none},
+		{ssl, [{cacertfile, EventCACertFile}, {certfile, EventCertFile}, {keyfile, EventKeyFile}]},
   		{sasl, {plain, EventUsername, EventPassword}}
 	]),
 	ok = brod:start_producer(event_client, list_to_binary(EventTopic), _ProducerConfig = [
 		{required_acks, none},
+		{ssl, [{cacertfile, EventCACertFile}, {certfile, EventCertFile}, {keyfile, EventKeyFile}]},
 		{sasl, {plain, EventUsername, EventPassword}}
 	]).
 
