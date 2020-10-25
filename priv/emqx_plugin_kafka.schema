@@ -22,12 +22,12 @@
 ]}.
 
 {mapping, "event.kafka.username", "emqx_plugin_kafka.broker", [
-  {default, ""},
+  {default, "user"},
   {datatype, string}
 ]}.
 
 {mapping, "event.kafka.password", "emqx_plugin_kafka.broker", [
-  {default, ""},
+  {default, "pass"},
   {datatype, string}
 ]}.
 
